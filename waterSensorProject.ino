@@ -4,19 +4,19 @@
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7); // Dirección I2C y pines de conexión
 
-const int sensorPin = 2;
+const int sensorPin = 3;
 volatile long pulse;
 
 float volume;
 float maxVol = 1.0;
 float targetVol = maxVol;
 
-const int solenoidPin = 7;       // Válvula
+const int solenoidPin = 2;       // Válvula
 
-const int buttonStartPin = 3;    // Inicio
-const int buttonResetPin = 4;    // Reinicio
-const int buttonIncreasePin = 5; // Volumen ++
-const int buttonDecreasePin = 6; // Volumen --
+const int buttonStartPin = 7;    // Inicio
+const int buttonResetPin = 8;    // Reinicio
+const int buttonIncreasePin = 9; // Volumen ++
+const int buttonDecreasePin = 10; // Volumen --
 
 bool systemRunning = false;   // Estado del sistema
 //bool valveClosed = false;    
@@ -40,7 +40,7 @@ void setup() {
   pinMode(solenoidPin, OUTPUT);
   Serial.begin(9600);
   attachInterrupt(digitalPinToInterrupt(sensorPin), increase, RISING);
-  digitalWrite(solenoidPin, LOW);
+  digitalWrite(solenoidPin, HIGH);
 
   // Configuración LCD
   lcd.setBacklightPin(3, POSITIVE);
@@ -82,14 +82,14 @@ void loop() {
   // Iniciar si no está en ejecución
   if (startButtonState == LOW && !systemRunning) {
     systemRunning = true;
-    digitalWrite(solenoidPin, HIGH); 
+    digitalWrite(solenoidPin, LOW); 
     lastVolumeUpdate = millis(); 
     delay(100); 
   }
 
   // Finalizar = objetivo
   if (volume >= targetVol && systemRunning) {
-    digitalWrite(solenoidPin, LOW);
+    digitalWrite(solenoidPin, HIGH);
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Reinicie el sistema");
@@ -97,14 +97,14 @@ void loop() {
     //systemRunning = false; // Reiniciar el sistema
   }
 
-  // Reiniciar todo aaaa
+  // Reiniciar todo 
   if (resetButtonState == LOW) {
     pulse = 0;
     volume = 0.0;
     targetVol = maxVol;
     systemRunning = false;
     //valveClosed = false; // Restablecer el estado de la válvula
-    digitalWrite(solenoidPin, LOW); 
+    digitalWrite(solenoidPin, HIGH); 
     delay(100); 
   }
 
@@ -126,4 +126,3 @@ void increase() {
     pulse++;
   }
 }
-
